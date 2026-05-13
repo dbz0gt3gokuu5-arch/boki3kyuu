@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BizFlow - お金の流れを体感する</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+:root {
+  --bg-color: #0f172a;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-green: #10b981;
+  --accent-red: #ef4444;
+  --accent-blue: #3b82f6;
+  --glass-bg: rgba(30, 41, 59, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  background: radial-gradient(circle at top right, #1e293b, var(--bg-color));
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 480px;
+  height: 100vh;
+  max-height: 900px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  background: var(--bg-color);
+}
+
+.glass-header {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--glass-border);
+  z-index: 10;
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 1.5rem;
+  background: linear-gradient(to right, var(--accent-green), var(--accent-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.status-pill {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid var(--glass-border);
+}
+
+main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Screens */
+.screen {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.screen.active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Home Screen */
+.hero {
+  text-align: center;
+  margin: auto 0;
+}
+.hero h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+.hero p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+.primary-btn {
+  background: var(--accent-blue);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+  width: 100%;
+}
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+}
+
+/* Event Screen */
+.event-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+.event-card h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--accent-green);
+}
+.event-card p {
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+.options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.option-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  padding: 1rem;
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.option-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Result & Dashboard Screen */
+.result-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.result-header h2 {
+  font-size: 1.5rem;
+}
+.result-header.correct h2 {
+  color: var(--accent-green);
+}
+.result-header.incorrect h2 {
+  color: var(--accent-red);
+}
+.coach-bubble {
+  display: flex;
+  gap: 1rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  padding: 1rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+}
+.coach-icon {
+  font-size: 2rem;
+}
+.coach-text {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Dashboard Visuals */
+.dashboard-title {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.tank-container {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 250px;
+}
+.tank-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+.tank-glass {
+  width: 60px;
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+.tank-liquid {
+  width: 100%;
+  background: var(--accent-green);
+  transition: height 1s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px var(--accent-green);
+}
+.tank-value {
+  margin-top: 0.5rem;
+  font-weight: 800;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.bs-container {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  height: 250px;
+}
+.bs-blocks {
+  flex: 1;
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+.bs-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+  height: 100%;
+}
+.bs-block {
+  width: 100%;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  text-align: center;
+  padding: 2px 0;
+  font-weight: 600;
+  color: white;
+  transition: height 1s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.block-asset { background: var(--accent-green); box-shadow: 0 0 5px var(--accent-green); }
+.block-liability { background: var(--accent-red); box-shadow: 0 0 5px var(--accent-red); }
+.block-equity { background: var(--accent-blue); box-shadow: 0 0 5px var(--accent-blue); }
+
+.diff-badge {
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 5px;
+  font-weight: bold;
+  display: block;
+}
+.diff-up { color: var(--accent-green); background: rgba(16, 185, 129, 0.2); }
+.diff-down { color: var(--accent-red); background: rgba(239, 68, 68, 0.2); }
+
+.next-btn {
+  background: var(--glass-bg);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.next-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header class="glass-header">
+      <div class="logo">BizFlow</div>
+      <div class="status-pill">
+        <span class="label">Level</span>
+        <span class="value" id="user-level">1</span>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <!-- Screens injected by JS -->
+    </main>
+  </div>
+
+  <script>
+// State Management
+let appState = {
+  level: 1,
+  currentIndex: 0,
+  financials: {
+    cash: 0,
+    otherAssets: 0,
+    liabilities: 0,
+    equity: 0
+  }
+};
+
+let previousFinancials = { ...appState.financials };
+
+// Formatter
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(amount);
+};
+
+// --- Procedural Event Generation Engine ---
+// 暗記防止のため、単語と金額をランダムに組み合わせて無限に問題を生成する仕組み
+
+const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const randPick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+// 語彙リスト
+const words = {
+  highValueAssets: ["MacBook", "Windows PC", "一眼レフカメラ", "動画編集用モニター", "高性能オフィスチェア", "業務用デスク", "3Dプリンター", "タブレット端末", "店舗用ショーケース", "業務用エスプレッソマシン"],
+  consumables: ["コピー用紙", "事務用ボールペンセット", "プリンターのインク", "名刺の追加発注", "文房具一式", "打ち合わせ用のお茶", "おしぼりセット", "梱包用の段ボール"],
+  services: ["Webサイト制作", "ロゴデザイン", "システム開発", "コンサルティング", "記事の執筆", "動画編集", "イベント撮影", "翻訳作業", "マーケティングリサーチ"],
+  ads: ["Web広告費", "チラシの印刷代", "SNSのプロモーション費", "雑誌への掲載料", "看板の設置費用", "インフルエンサーへのPR依頼料"],
+  softwares: ["会計ソフト", "デザインツール", "動画編集ソフト", "顧客管理システム", "チャットツールの有料プラン", "クラウドストレージ"],
+  travels: ["出張用の新幹線代", "取引先へのタクシー代", "出張先のホテル代", "航空券代", "レンタカー代"],
+  goods: ["販売用のオリジナルTシャツ", "輸入雑貨", "ハンドメイド用の素材", "美容液の仕入れ", "限定スニーカーの仕入れ"]
+};
+
+// テンプレート群（これらにランダムな単語と金額を流し込む）
+const eventTemplates = [
+  // --- 資金調達・元手 ---
+  {
+    phase: "起業・増資",
+    generate: () => {
+      const amount = randInt(10, 100) * 10000;
+      return {
+        description: `事業資金として、自分個人の貯金から ${formatCurrency(amount)} を事業用の口座に入れた！`,
+        options: [
+          { text: "事業の「現金」が増え、「純資産（元手）」も増える", correct: true, changes: { cash: amount, equity: amount } },
+          { text: "これは事業で稼いだお金だから「収益」になる", correct: false, changes: { cash: amount, equity: amount } }
+        ],
+        feedbackCorrect: "大正解！自分のお金を入れただけだから収益ではなく「元手（純資産）」になるよ。",
+        feedbackIncorrect: "おっと、まだ何も売ってないから「収益」じゃないんだ。自分のお金を入れただけだから「元手（純資産）」が増えることになるよ。"
+      };
+    }
+  },
+  {
+    phase: "資金調達",
+    generate: () => {
+      const amount = randInt(50, 300) * 10000;
+      return {
+        description: `事業を拡大するため、銀行から ${formatCurrency(amount)} を借り入れた。`,
+        options: [
+          { text: "現金が増え、同時に「負債（借金）」も増える", correct: true, changes: { cash: amount, liabilities: amount } },
+          { text: "現金が増えたので、利益（純資産）も増える", correct: false, changes: { cash: amount, liabilities: amount } }
+        ],
+        feedbackCorrect: "正解！現金は増えるけど、後で返さないといけないから「負債」も増えるね。会社のお金が増えても、利益が出たわけじゃないんだ。",
+        feedbackIncorrect: "惜しい！もらったお金じゃなくて「借りたお金」だから利益（純資産）は増えないよ。「負債」として記録しないといけないんだ。"
+      };
+    }
+  },
+  // --- 設備投資・資産 ---
+  {
+    phase: "機材調達",
+    generate: () => {
+      const item = randPick(words.highValueAssets);
+      const amount = randInt(10, 30) * 10000;
+      return {
+        description: `仕事用の ${item} を ${formatCurrency(amount)} で現金購入した。`,
+        options: [
+          { text: "お金が減ったので単なる「費用」として処理する", correct: false, changes: { cash: -amount, otherAssets: amount } },
+          { text: "長く使うものなので「資産」に変わったと考える", correct: true, changes: { cash: -amount, otherAssets: amount } }
+        ],
+        feedbackCorrect: `その通り！長く使う高価な ${item} は「資産（備品）」になるよ。現金という資産が別の形に変わっただけなんだ。`,
+        feedbackIncorrect: `惜しい！高価で長く使う ${item} はすぐには「費用」にならず、一旦「資産（備品）」になるんだ。現金が形を変えたんだね。`
+      };
+    }
+  },
+  {
+    phase: "消耗品の購入",
+    generate: () => {
+      const item = randPick(words.consumables);
+      const amount = randInt(1, 9) * 1000;
+      return {
+        description: `業務で使う ${item} を ${formatCurrency(amount)} で現金購入した。`,
+        options: [
+          { text: "すぐに使い切るものなので「費用」として処理する", correct: true, changes: { cash: -amount, equity: -amount } },
+          { text: "会社の持ち物が増えたので「資産」になる", correct: false, changes: { cash: -amount, equity: -amount } }
+        ],
+        feedbackCorrect: `正解！ ${item} のような少額ですぐ使い切るものは「費用」になるよ。利益と現金が減るね。`,
+        feedbackIncorrect: `実は少額ですぐ使い切るようなものは資産にはせず、購入時に「費用」として処理するんだよ。`
+      };
+    }
+  },
+  // --- 売上と回収 ---
+  {
+    phase: "仕事の受注と納品",
+    generate: () => {
+      const item = randPick(words.services);
+      const amount = randInt(5, 50) * 10000;
+      return {
+        description: `クライアントに ${item} を納品し、${formatCurrency(amount)} の請求書を送った。入金は来月末だ。`,
+        options: [
+          { text: "売上が立ち、後でお金をもらう権利（資産）が増える", correct: true, changes: { otherAssets: amount, equity: amount } },
+          { text: "まだお金をもらっていないので何もしない", correct: false, changes: { otherAssets: amount, equity: amount } }
+        ],
+        feedbackCorrect: "大正解！まだ現金は手元にないけど、「売掛金」という後でお金をもらう権利（資産）が増えた状態だよ。同時に「利益」も増えるね。",
+        feedbackIncorrect: "入金前でも、納品が完了していれば「売上（収益）」になるんだ！同時に「後でお金をもらう権利（売掛金）」という資産が増えるよ。"
+      };
+    }
+  },
+  {
+    phase: "売掛金の回収",
+    generate: () => {
+      const amount = randInt(5, 50) * 10000;
+      return {
+        description: `来月末になり、クライアントから先月の売上 ${formatCurrency(amount)} が現金で振り込まれた！`,
+        options: [
+          { text: "売上がさらに増え、現金も増える", correct: false, changes: { otherAssets: -amount, cash: amount } },
+          { text: "もらう権利（資産）が減り、現金が増える", correct: true, changes: { otherAssets: -amount, cash: amount } }
+        ],
+        feedbackCorrect: "その通り！先月すでに「売上」は計上しているからね。今回は「売掛金（もらう権利）」が「現金」に変わっただけなんだ！",
+        feedbackIncorrect: "先月すでに売上として計算しているから、ここでもう一度売上にすると二重になっちゃうよ！もらう権利が現金に変わっただけだよ。"
+      };
+    }
+  },
+  {
+    phase: "即金ビジネス",
+    generate: () => {
+      const item = randPick(["イベント物販", "単発のコンサル", "出張撮影", "オンラインセミナー"]);
+      const amount = randInt(1, 10) * 10000;
+      return {
+        description: `${item} を行い、その場で現金 ${formatCurrency(amount)} を受け取った。`,
+        options: [
+          { text: "現金が増え、同時に利益（純資産）も増える", correct: true, changes: { cash: amount, equity: amount } },
+          { text: "現金は増えるが、後でサービスをするかもしれないので負債になる", correct: false, changes: { cash: amount, equity: amount } }
+        ],
+        feedbackCorrect: "正解！その場でお金をもらってサービスも完了しているから、現金と売上（利益）が同時に増える最高のキャッシュフローだね！",
+        feedbackIncorrect: "もうサービスは提供済みだから、立派な売上（収益）だよ！現金と利益が同時に増えるんだ。"
+      };
+    }
+  },
+  {
+    phase: "前受金（サブスクなど）",
+    generate: () => {
+      const item = randPick(words.softwares);
+      const amount = randInt(5, 20) * 10000;
+      return {
+        description: `自社開発の ${item} の年間契約を結び、先に1年分の料金 ${formatCurrency(amount)} を現金でもらった。`,
+        options: [
+          { text: "全額いきなり今年の売上（利益）になる", correct: false, changes: { cash: amount, liabilities: amount } },
+          { text: "現金は増えるが、まだサービスを提供していない分は「負債」になる", correct: true, changes: { cash: amount, liabilities: amount } }
+        ],
+        feedbackCorrect: "大正解！まだ仕事をしていないのにお金をもらった状態。サービスを提供する義務があるから一旦「負債（前受金）」になるんだよ！",
+        feedbackIncorrect: "惜しい！お金はもらったけど、これから1年間サービスを提供する「義務」があるよね。だから、サービスを提供するまでは「負債」になるんだ。"
+      };
+    }
+  },
+  // --- 費用・支払い ---
+  {
+    phase: "プロモーション",
+    generate: () => {
+      const item = randPick(words.ads);
+      const amount = randInt(1, 15) * 10000;
+      return {
+        description: `新規顧客獲得のため、${item} に ${formatCurrency(amount)} を現金で払った。`,
+        options: [
+          { text: "「費用」が発生し、利益と現金が減る", correct: true, changes: { cash: -amount, equity: -amount } },
+          { text: "将来の売上につながるので「資産」になる", correct: false, changes: { cash: -amount, equity: -amount } }
+        ],
+        feedbackCorrect: `正解！ ${item} は形に残らないから「費用」になるよ。費用を使うと利益（純資産）と現金が減るんだ。`,
+        feedbackIncorrect: `将来につながる大切なお金だけど、形に残らないから会計上は「費用」になるんだ。利益と現金が減る処理だよ。`
+      };
+    }
+  },
+  {
+    phase: "外注の活用",
+    generate: () => {
+      const item = randPick(words.services);
+      const amount = randInt(3, 20) * 10000;
+      return {
+        description: `${item} を外部に依頼し納品された。${formatCurrency(amount)} の請求書が届いたが支払いは来月だ。`,
+        options: [
+          { text: "まだ現金は減っていないが、後で払う義務（負債）と費用が発生した", correct: true, changes: { liabilities: amount, equity: -amount } },
+          { text: "支払うまで費用にはならないので何もしない", correct: false, changes: { liabilities: amount, equity: -amount } }
+        ],
+        feedbackCorrect: "その通り！支払いはまだでも、すでに作業は終わっているから「費用」になる。同時に「買掛金（未払金）」という負債が増えるんだ。",
+        feedbackIncorrect: "実は、作業が終わって請求書が来た時点で「費用」として計上するんだよ。現金は減ってないけど、後で払う「負債」が増えるんだ。"
+      };
+    }
+  },
+  {
+    phase: "買掛金（未払金）の支払い",
+    generate: () => {
+      const amount = randInt(3, 20) * 10000;
+      return {
+        description: `先月届いていた外注費 ${formatCurrency(amount)} の請求書を、現金で振り込んだ。`,
+        options: [
+          { text: "ここで改めて費用を計上し、現金を減らす", correct: false, changes: { cash: -amount, liabilities: -amount } },
+          { text: "現金が減り、後で払う義務（負債）が消える", correct: true, changes: { cash: -amount, liabilities: -amount } }
+        ],
+        feedbackCorrect: "正解！先月すでに費用にして負債を記録しているからね。今回は負債を現金でチャラにしただけだよ。",
+        feedbackIncorrect: "先月すでに費用として計算しているから、ここでもう一度費用にすると二重になっちゃうよ！今回は「払う義務（負債）」が消えただけなんだ。"
+      };
+    }
+  },
+  {
+    phase: "交通費・移動費",
+    generate: () => {
+      const item = randPick(words.travels);
+      const amount = randInt(3, 30) * 1000;
+      return {
+        description: `${item} として ${formatCurrency(amount)} を現金で払った。`,
+        options: [
+          { text: "現金が減り、費用が発生して利益（純資産）が減る", correct: true, changes: { cash: -amount, equity: -amount } },
+          { text: "移動という経験を買ったので資産が増える", correct: false, changes: { cash: -amount, equity: -amount } }
+        ],
+        feedbackCorrect: "正解！交通費は形に残らない「費用」だね。現金が減り、その分利益（純資産）も減ることになるよ。",
+        feedbackIncorrect: "経験は大事だけど、会計上は形に残らないものは「費用」になるんだ。現金と利益が減る処理になるよ。"
+      };
+    }
+  },
+  // --- クレジットカード・借入返済 ---
+  {
+    phase: "クレジットカード決済",
+    generate: () => {
+      const item = randPick(words.softwares);
+      const amount = randInt(2, 10) * 1000;
+      return {
+        description: `事業用の ${item} 代 ${formatCurrency(amount)} をクレジットカードで支払った。引き落としは来月。`,
+        options: [
+          { text: "現金は減らず、後で払う義務（負債）と費用が発生する", correct: true, changes: { liabilities: amount, equity: -amount } },
+          { text: "カードで払った瞬間に現金が減ったことにする", correct: false, changes: { liabilities: amount, equity: -amount } }
+        ],
+        feedbackCorrect: "大正解！クレジットカード払いは、一時的にカード会社に立て替えてもらっている借金（負債）の状態なんだ。手元の現金は引き落とし日まで残るよ。",
+        feedbackIncorrect: "引き落としは来月だから、いまのところ手元の現金は減っていないよ！その代わり、カード会社への「負債」が増えるんだ。"
+      };
+    }
+  },
+  {
+    phase: "借入金の返済",
+    generate: () => {
+      const amount = randInt(3, 10) * 10000;
+      return {
+        description: `銀行から借りていたお金のうち、${formatCurrency(amount)} を現金で返済した。（元本のみ）`,
+        options: [
+          { text: "負債（借金）が減り、現金も減る。利益には影響しない", correct: true, changes: { cash: -amount, liabilities: -amount } },
+          { text: "お金が手元からなくなるので「費用」になり、利益が減る", correct: false, changes: { cash: -amount, liabilities: -amount } }
+        ],
+        feedbackCorrect: "その通り！借りていたお金を返しただけだから、「費用」にはならないんだ。現金と負債が同時に減るだけだよ。",
+        feedbackIncorrect: "惜しい！元本の返済は「費用」にはならないんだ。ただ「現金」と「負債」が両方減るだけで、会社の利益（純資産）には影響しないんだよ。"
+      };
+    }
+  },
+  {
+    phase: "利息の支払い",
+    generate: () => {
+      const amount = randInt(2, 8) * 1000;
+      return {
+        description: `借入金の利息として、${formatCurrency(amount)} を現金で支払った。`,
+        options: [
+          { text: "利息は借りていた元本ではないので、「費用」になる", correct: true, changes: { cash: -amount, equity: -amount } },
+          { text: "元本の返済と同じで、負債が減るだけ", correct: false, changes: { cash: -amount, equity: -amount } }
+        ],
+        feedbackCorrect: "大正解！元本の返済は費用にならないけど、「利息」はお金を借りるための手数料（費用）なんだ。だから利益が減るよ。",
+        feedbackIncorrect: "元本の返済は負債が減るだけだけど、「利息」は銀行への手数料みたいなものだから「費用」になるんだよ！"
+      };
+    }
+  },
+  // --- 税金・決算・在庫 ---
+  {
+    phase: "決算と税金",
+    generate: () => {
+      const amount = randInt(5, 50) * 10000;
+      return {
+        description: `1年の決算！出た利益に対して税金 ${formatCurrency(amount)} を現金で支払った。`,
+        options: [
+          { text: "費用として利益（純資産）から差し引かれ、現金も減る", correct: true, changes: { cash: -amount, equity: -amount } },
+          { text: "税金は国に預けているだけだから「資産」になる", correct: false, changes: { cash: -amount, equity: -amount } }
+        ],
+        feedbackCorrect: "正解！税金は稼いだ利益の中から支払う「費用」のようなものだね。利益（純資産）と現金が減るよ。",
+        feedbackIncorrect: "税金は残念ながら戻ってこないお金だから、預金（資産）ではなく「費用」として純資産を減らすことになるんだ。"
+      };
+    }
+  },
+  {
+    phase: "在庫の購入",
+    generate: () => {
+      const item = randPick(words.goods);
+      const amount = randInt(3, 20) * 10000;
+      return {
+        description: `${item} を仕入れるため、現金 ${formatCurrency(amount)} を支払った。まだ売れていない。`,
+        options: [
+          { text: "現金が減り、販売用の商品（資産）が増える", correct: true, changes: { cash: -amount, otherAssets: amount } },
+          { text: "仕入れた瞬間に全額「費用」になる", correct: false, changes: { cash: -amount, otherAssets: amount } }
+        ],
+        feedbackCorrect: "大正解！商品は売れるまで「在庫（資産）」になるんだ。現金が商品という別の資産に変わった状態だね。",
+        feedbackIncorrect: "実は、商品は「売れた時」に初めて費用になるんだ。売れるまでは手元にある価値（資産）として考えるよ。"
+      };
+    }
+  },
+  {
+    phase: "商品の販売（利益確定）",
+    generate: () => {
+      const cost = randInt(2, 10) * 10000;
+      const profit = randInt(1, 5) * 10000;
+      const sales = cost + profit;
+      return {
+        description: `以前 ${formatCurrency(cost)} で仕入れた在庫が、${formatCurrency(sales)} の現金で売れた！`,
+        options: [
+          { text: `現金が${formatCurrency(sales)}増え、在庫(資産)が${formatCurrency(cost)}減り、差額${formatCurrency(profit)}が利益になる`, correct: true, changes: { cash: sales, otherAssets: -cost, equity: profit } },
+          { text: `現金が${formatCurrency(sales)}増えたので、純資産も${formatCurrency(sales)}増える`, correct: false, changes: { cash: sales, otherAssets: -cost, equity: profit } }
+        ],
+        feedbackCorrect: `完璧！在庫がなくなって現金が入ってくる。売上(${formatCurrency(sales)}) - 仕入(${formatCurrency(cost)}) = 利益(${formatCurrency(profit)}) という構造がBSの動きでわかるね！`,
+        feedbackIncorrect: "手元から「在庫（資産）」がなくなっていることを忘れずに！売れた分だけ在庫を減らして、差額が利益（純資産）になるんだ。"
+      };
+    }
+  },
+  {
+    phase: "役員報酬",
+    generate: () => {
+      const amount = randInt(15, 50) * 10000;
+      return {
+        description: `社長である自分自身に、給料として ${formatCurrency(amount)} を現金で支給した。`,
+        options: [
+          { text: "会社の現金が減り、給料という費用が発生する", correct: true, changes: { cash: -amount, equity: -amount } },
+          { text: "自分のお金になるだけだから会社の利益は変わらない", correct: false, changes: { cash: -amount, equity: -amount } }
+        ],
+        feedbackCorrect: "正解！会社と社長個人の財布は別物なんだ。会社から見れば、社長への給料も立派な「費用」だから利益は減るよ。",
+        feedbackIncorrect: "会社と社長の財布は完全に別物なんだ！会社から見れば、社長の給料も外注費などと同じ「費用」として利益を減らすんだよ。"
+      };
+    }
+  },
+  {
+    phase: "前払費用",
+    generate: () => {
+      const item = randPick(["サーバー代", "店舗の家賃", "保険料"]);
+      const amount = randInt(6, 24) * 10000;
+      return {
+        description: `1年分の ${item} として、現金 ${formatCurrency(amount)} を一括で前払いした。`,
+        options: [
+          { text: "まだ1年経っていないので「前払費用」という資産になる", correct: true, changes: { cash: -amount, otherAssets: amount } },
+          { text: "払った瞬間に全額が今年の費用になる", correct: false, changes: { cash: -amount, otherAssets: amount } }
+        ],
+        feedbackCorrect: "素晴らしい！まだ利用していない未来の期間の分は、「前払金」という「資産」になるんだ。毎月少しずつ費用に変えていくよ。",
+        feedbackIncorrect: "実は、まだ使っていない未来の期間の分のお金は、一旦「前払金（資産）」にするんだ。毎月利用するごとに費用に変わっていくよ。"
+      };
+    }
+  }
+];
+
+
+// Active Session Events
+let sessionEvents = [];
+
+const SESSION_LENGTH = 7; // Number of questions per play
+
+// Utility: Shuffle Array
+const shuffleArray = (array) => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
+// DOM Elements
+const mainContent = document.getElementById('main-content');
+const levelSpan = document.getElementById('user-level');
+
+// Render Methods
+const renderScreen = (html) => {
+  mainContent.innerHTML = html;
+};
+
+const showHome = () => {
+  renderScreen(`
+    <div class="screen active" id="home-screen">
+      <div class="hero">
+        <h1>BizFlow</h1>
+        <p>お金の流れを体感しよう。<br>あなたは今日からスモールビジネスの経営者です。<br><small style="color:var(--text-secondary)">★ 単語と金額が毎回変わる無限生成モード搭載！</small></p>
+        <button class="primary-btn" onclick="startSession()">事業をはじめる (全${SESSION_LENGTH}問)</button>
+      </div>
+    </div>
+  `);
+};
+
+window.startSession = () => {
+  // Generate random events from templates
+  const shuffledTemplates = shuffleArray(eventTemplates);
+  let selected = [];
+  
+  if (appState.financials.cash === 0 && appState.financials.equity === 0) {
+    // Force funding event to ensure cash > 0
+    const startTemplate = eventTemplates.find(t => t.phase === "起業・増資");
+    selected.push(startTemplate.generate());
+    
+    // Fill the rest
+    const remaining = shuffledTemplates.filter(t => t.phase !== "起業・増資").slice(0, SESSION_LENGTH - 1);
+    remaining.forEach(t => selected.push(t.generate()));
+  } else {
+    const selectedTemplates = shuffledTemplates.slice(0, SESSION_LENGTH);
+    selectedTemplates.forEach(t => selected.push(t.generate()));
+  }
+  
+  sessionEvents = selected;
+  appState.currentIndex = 0;
+  startEvent();
+};
+
+const startEvent = () => {
+  if(appState.currentIndex >= sessionEvents.length) {
+    renderScreen(`
+      <div class="screen active" id="home-screen">
+        <div class="hero">
+          <h1>お疲れ様でした！</h1>
+          <p>今回のシナリオはすべて完了しました。<br>単語や金額が変わるので暗記では解けません！</p>
+          <button class="primary-btn" onclick="resetApp()">次の月（新しい問題）に進む</button>
+        </div>
+      </div>
+    `);
+    return;
+  }
+  
+  const ev = sessionEvents[appState.currentIndex];
+  renderScreen(`
+    <div class="screen active" id="event-screen">
+      <div class="event-card">
+        <h2>Phase: ${ev.phase} <span style="font-size:0.8rem; color:var(--text-secondary); float:right;">(${appState.currentIndex + 1}/${SESSION_LENGTH})</span></h2>
+        <p>${ev.description}</p>
+      </div>
+      <div class="options-container">
+        ${ev.options.map((opt, i) => `
+          <button class="option-btn" onclick="handleAnswer(${i})">${opt.text}</button>
+        `).join('')}
+      </div>
+    </div>
+  `);
+};
+
+window.handleAnswer = (optionIndex) => {
+  const ev = sessionEvents[appState.currentIndex];
+  const selectedOption = ev.options[optionIndex];
+  const isCorrect = selectedOption.correct;
+  
+  // Save previous state for animation
+  previousFinancials = { ...appState.financials };
+  
+  // Apply changes
+  for(let key in selectedOption.changes) {
+    appState.financials[key] += selectedOption.changes[key];
+  }
+  
+  showResult(isCorrect, isCorrect ? ev.feedbackCorrect : ev.feedbackIncorrect);
+};
+
+const showResult = (isCorrect, feedback) => {
+  // Calculate max value for tank/block scaling
+  const f = appState.financials;
+  const totalAssets = Math.max(f.cash + f.otherAssets, 0); // prevent negative scaling visual bugs
+  const totalLiabEquity = Math.max(f.liabilities + f.equity, 0);
+  const maxVal = Math.max(totalAssets, totalLiabEquity, 500000); // base scale 500k
+  
+  // Heights %
+  const cashHeight = Math.max(Math.min((f.cash / maxVal) * 100, 100), 0);
+  const otherAssetsHeight = Math.max(Math.min((f.otherAssets / maxVal) * 100, 100), 0);
+  const liabHeight = Math.max(Math.min((f.liabilities / maxVal) * 100, 100), 0);
+  const equityHeight = Math.max(Math.min((f.equity / maxVal) * 100, 100), 0);
+
+  const getDiffHtml = (curr, prev) => {
+    const diff = curr - prev;
+    if(diff === 0) return '';
+    const sign = diff > 0 ? '+' : '';
+    const className = diff > 0 ? 'diff-up' : 'diff-down';
+    return `<span class="diff-badge ${className}">${sign}${formatCurrency(diff)}</span>`;
+  };
+
+  renderScreen(`
+    <div class="screen active" id="result-screen">
+      <div class="result-header ${isCorrect ? 'correct' : 'incorrect'}">
+        <h2>${isCorrect ? '正解！ 🎉' : '惜しい！ 💡'}</h2>
+      </div>
+      
+      <div class="coach-bubble">
+        <div class="coach-icon">🤖</div>
+        <div class="coach-text">${feedback}</div>
+      </div>
+
+      <div class="dashboard-title">あなたの財務状況</div>
+      <div class="dashboard-grid">
+        <!-- Cash Tank -->
+        <div class="tank-container">
+          <div class="tank-label">現金タンク</div>
+          <div class="tank-glass">
+            <div class="tank-liquid" style="height: 0%" id="anim-cash"></div>
+          </div>
+          <div class="tank-value">
+            ${formatCurrency(f.cash)}
+            ${getDiffHtml(f.cash, previousFinancials.cash)}
+          </div>
+        </div>
+
+        <!-- BS Blocks -->
+        <div class="bs-container">
+          <div class="tank-label">資産と負債</div>
+          <div class="bs-blocks">
+            <div class="bs-col">
+              <div class="bs-block block-asset" style="height: 0%;" id="anim-oasset">他資産</div>
+              <div class="bs-block block-asset" style="height: 0%;" id="anim-casset">現金</div>
+            </div>
+            <div class="bs-col">
+              <div class="bs-block block-liability" style="height: 0%;" id="anim-liab">負債</div>
+              <div class="bs-block block-equity" style="height: 0%;" id="anim-equity">純資産</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="next-btn" onclick="nextEvent()">次のイベントへ</div>
+    </div>
+  `);
+
+  // Trigger animations after render
+  setTimeout(() => {
+    document.getElementById('anim-cash').style.height = cashHeight + '%';
+    document.getElementById('anim-casset').style.height = cashHeight + '%';
+    document.getElementById('anim-oasset').style.height = otherAssetsHeight + '%';
+    document.getElementById('anim-liab').style.height = liabHeight + '%';
+    document.getElementById('anim-equity').style.height = equityHeight + '%';
+  }, 50);
+};
+
+window.nextEvent = () => {
+  appState.currentIndex++;
+  appState.level++;
+  levelSpan.innerText = appState.level;
+  startEvent();
+};
+
+window.resetApp = () => {
+  appState.currentIndex = 0;
+  showHome();
+};
+
+// Init
+showHome();
+  </script>
+</body>
+</html>
